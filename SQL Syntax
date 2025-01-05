@@ -32,3 +32,117 @@ FROM
     pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
 ORDER BY price DESC
 LIMIT 1;
+
+
+-- --((4))-- Identify the most common pizza size ordered.
+
+
+SELECT 
+    pizzas.size,
+    COUNT(order_details.order_details_id) AS Order_Count
+FROM
+    pizzas
+        JOIN
+    order_details ON order_details.pizza_id = pizzas.pizza_id
+GROUP BY pizzas.size
+ORDER BY Order_Count DESC;
+
+
+
+-- (((5)))-- List the top 5 most ordered pizza types along with their quantities.
+
+SELECT 
+    pizza_types.name,
+    SUM(order_details.quantity) AS total_order_qty
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+        JOIN
+    order_details ON order_details.pizza_id = pizzas.pizza_id
+GROUP BY pizza_types.name
+ORDER BY total_order_qty DESC
+LIMIT 5;
+
+
+
+-- ((6)) Join the necessary tables to find the total quantity of each pizza category ordered.
+
+SELECT 
+    pizza_types.category,
+    SUM(order_details.quantity) AS total_order_qty
+FROM
+    pizza_types
+    JOIN pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+    JOIN order_details ON order_details.pizza_id = pizzas.pizza_id
+GROUP BY pizza_types.category
+ORDER BY total_order_qty DESC;
+
+
+
+-- ((7)) Determine the distribution of orders by hour of the day.
+
+select
+hour(order_time) , count(order_id) from orders
+group by
+hour(order_time);
+
+
+-- ((8)) find the category-wise distribution of pizzas, 
+
+SELECT 
+    category, COUNT(name)
+FROM
+    pizza_types
+GROUP BY category;
+
+
+-- ((9))Group the orders by date and calculate the average number of pizzas ordered per day.
+
+
+
+SELECT 
+    AVG(sum_orders) as Per_day_avg_orders
+FROM
+    (SELECT 
+        orders.order_date, SUM(order_details.quantity) AS Sum_orders
+    FROM
+        orders
+    JOIN order_details ON orders.order_id = order_details.order_id
+    GROUP BY orders.order_date) AS total_qty;
+
+
+
+-- ((10)) Determine the top 3 most ordered pizza types based on revenue.
+
+SELECT 
+    pizza_types.name,
+    SUM(order_details.quantity * pizzas.price) AS total_rev
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+        JOIN
+    order_details ON order_details.pizza_id = pizzas.pizza_id
+GROUP BY pizza_types.name
+ORDER BY total_rev DESC;
+
+
+
+-- ((11)) Calculate the percentage contribution of each pizza type to total revenue.
+
+SELECT
+  pizza_types.name,
+  SUM(order_details.quantity * pizzas.price) AS total_rev,
+  ROUND((SUM(order_details.quantity * pizzas.price) / 
+    SUM(SUM(order_details.quantity * pizzas.price)) OVER ()) * 100, 2) AS percentage_contribution
+FROM
+  pizza_types
+JOIN
+  pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+JOIN
+  order_details ON order_details.pizza_id = pizzas.pizza_id
+GROUP BY
+  pizza_types.name
+ORDER BY
+  percentage_contribution DESC;
