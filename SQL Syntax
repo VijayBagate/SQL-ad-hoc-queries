@@ -1,0 +1,32 @@
+-- ((1))--Retrieve the total number of orders placed---
+
+select * from order_details;
+
+SELECT 
+    COUNT(order_id) AS Total_Orders
+FROM
+    orders;
+
+
+-- ((2)) Calculate the total revenue generated from pizza sales
+
+SELECT 
+    ROUND(SUM(order_details.quantity * pizzas.price),
+            2) AS Total_revenue
+FROM
+    order_details
+        JOIN
+    pizzas ON pizzas.pizza_id = order_details.pizza_id;
+
+-- ((3)) Identify the highest-priced pizza.
+
+
+
+SELECT 
+    pizza_types.name, pizzas.price
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+ORDER BY price DESC
+LIMIT 1;
